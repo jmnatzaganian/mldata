@@ -27,11 +27,14 @@ Prerequisites
 Installation
 ============
 	1. Install all prerequisites
+	2. Install this package: X{python setup.py install}. The setup file is
+	located in the "src" folder.
 
 Getting Started
 ===============
 	- Click U{here<http://techtorials.me/datasets/index.html>} to access the
 	API.
+	- Check out the MNSIT demo X{python -m datasets.mnist.mnist}.
 
 Package Organization
 ====================

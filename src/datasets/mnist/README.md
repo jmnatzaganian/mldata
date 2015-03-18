@@ -7,7 +7,7 @@ The original dataset can be obtained [here](http://yann.lecun.com/exdb/mnist/).
 
 ## Usage
 Check out the "run_parse_example" in "mnist.py" for examples on how to use this
-dataset.
+dataset (`python -m datasets.mnist.mnist`).
 
 Click [here](http://techtorials.me/datasets/index.html) to access the API.
 

@@ -7,8 +7,6 @@ applications. More details may be found
 [Python 2.7.X](https://www.python.org/downloads/release/python-279/) (all other
 versions are untested)
 
-[Numpy] (http://www.numpy.org/)
-
 ## Usage
 Download this repo and inside the "src" folder execute `python setup.py
 install`.
