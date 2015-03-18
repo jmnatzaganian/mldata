@@ -1,7 +1,8 @@
 # datasets
 ## Intro
 This is a collection of various datasets that can be used for machine learning
-applications.
+applications. More details may be found
+[here](http://techtorials.me/python-machine-learning-datasets/).
 ## Prerequisites
 [Python 2.7.X](https://www.python.org/downloads/release/python-279/) (all other
 versions are untested)
