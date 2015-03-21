@@ -19,8 +19,10 @@ G{packagetree datasets}
 __docformat__ = 'epytext'
 
 # Native imports
-import os, struct, gzip, random, pkgutil
-from array import array
+import os, struct, gzip, pkgutil
+
+# Third party imports
+import numpy as np
 
 # Program imports
 from datasets.base              import BaseDataset
@@ -134,7 +136,7 @@ class MNIST(BaseDataset):
 		# Initialize the paths
 		if in_dir is None:
 			self.in_dir = os.path.join(pkgutil.get_loader(
-				'datasets.mnist').filename, 'data')
+				'datasets.vision.mnist').filename, 'data')
 		else:
 			self.in_dir = in_dir
 		self.out_dir        = out_dir
@@ -147,12 +149,14 @@ class MNIST(BaseDataset):
 		self.test_y_path  = os.path.join(self.in_dir,
 			't10k-labels-idx1-ubyte.gz')
 		
-		# Objects to store data
-		self.x_train = []; self.y_train = []
-		self.x_test  = []; self.y_test  = []
+		# Make the output directory, if necessary
+		try:
+			os.makedirs(out_dir)
+		except OSError:
+			pass
 		
 		# Set the seed for all future random numbers
-		random.seed(seed)
+		self.seed = seed
 		
 		# Load the data
 		self.load()
@@ -174,18 +178,21 @@ class MNIST(BaseDataset):
 		"""
 		
 		# Read the image into memory
+		dt = np.dtype('uint8')
 		with gzip.open(x_path, 'rb') as f:
 			magic, size, rows, cols = struct.unpack(">IIII", f.read(16))
 			if magic != 2051:
 				raise WrongMagicNumber(x_path, 2051, magic)
-			data = array("B", f.read())
+			data = np.frombuffer(f.read(), dtype=dt)
 		
-		if self.ndims == 1: # 1D representation
-			img = [[0] * rows * cols for x in xrange(size)]
+		if self.ndims == 1:
+			# 1D representation
+			img = np.zeros((size, rows * cols), dtype=dt)
 			for i in xrange(size):
 				img[i] = data[i * rows * cols:(i + 1) * rows * cols]
-		else:               # 2D representation
-			img = [[[0] * cols] * rows for x in xrange(size)]
+		else:
+			# 2D representation
+			img = np.zeros((size, rows, cols), dtype=dt)
 			for i in xrange(size):
 				for r in xrange(rows):
 					img[i][r] = data[i * rows * cols + r * cols:i * rows * cols
@@ -196,7 +203,7 @@ class MNIST(BaseDataset):
 			magic, size = struct.unpack(">II", f.read(8))
 			if magic != 2049:
 				raise WrongMagicNumber(x_path, 2049, magic)
-			lbl = array("B", f.read())
+			lbl = np.frombuffer(f.read(), dtype=dt)
 		
 		return img, lbl
 	
@@ -238,7 +245,7 @@ class MNIST(BaseDataset):
 		# Build the header
 		if make_header:
 			header = ['label'] + ['pixel_{0}'.format(x) for x in
-					xrange(len(self.x_train[0]))]
+					xrange(self.x_train.shape[1])]
 		else:
 			header = []
 		
@@ -268,7 +275,7 @@ def run_parse_example(out_dir):
 	"""
 	
 	in_dir = os.path.join(pkgutil.get_loader(
-		'datasets.mnist').filename, 'data')
+		'datasets.vision.mnist').filename, 'data')
 		
 	# How many samples per number to use
 	train_samples = 100

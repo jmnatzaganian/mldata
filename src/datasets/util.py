@@ -21,17 +21,19 @@ __docformat__ = 'epytext'
 # Native imports
 import cPickle, csv
 
-def load_csv(path, lbl_type=int, data_type=int, has_header=True):
+# Third party imports
+import numpy as np
+
+def load_csv(path, x_dtype=np.dtype('uint8'), y_dtype=np.dtype('uint8'),
+	has_header=True):
 	"""
 	Get the data from a dumped CSV.
 	
 	@param path: The full path to the CSV.
 	
-	@param lbl_type: Function representing what datatype the labels should be
-	converted into.
+	@param x_dtype: The NumPy data type that corresponds to the x data.
 	
-	@param data_type: Function representing what datatype the data should be
-	converted into.
+	@param y_dtype: The NumPy data type that corresponds to the y data.
 	
 	@param has_header: Set to True if the CSV file has a header.
 	
@@ -43,10 +45,10 @@ def load_csv(path, lbl_type=int, data_type=int, has_header=True):
 		if has_header: reader.next()
 		x = []; y = []
 		for row in reader:
-			x.append(lbl_type(row[0]))
-			y.append([data_type(d) for d in row[1:]])
+			x.append(np.array(row[1:], dtype=x_dtype))
+			y.append(row[0])
 	
-	return (x, y)
+	return (np.array(x), np.array(y, dtype=y_dtype))
 
 def load_pkl(path):
 	"""

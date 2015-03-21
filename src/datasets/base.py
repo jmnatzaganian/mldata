@@ -22,6 +22,9 @@ __docformat__ = 'epytext'
 import os, cPickle, csv
 from abc import ABCMeta, abstractmethod
 
+# Third party imports
+import numpy as np
+
 ###############################################################################
 ########## Class Implementation
 ###############################################################################
@@ -44,10 +47,7 @@ class BaseDataset(object):
 		@param out_dir: Base directory for all output data.
 		
 		@param seed: The seed used for all random numbers.
-		"""
-		
-		# Set the seed for all future random numbers
-		random.seed(seed)
+		"""		
 	
 	def _csv_dump(self, path, header, x, y=None, iters=1):
 		"""
@@ -150,23 +150,17 @@ class BaseDataset(object):
 		Randomly shuffles the training and test data.
 		"""
 		
-		# Shuffle the indicies to ensure the proper matching is maintained.
-		train_ix = range(len(self.x_train))
-		test_ix  = range(len(self.x_test))
-		random.shuffle(train_ix)
-		random.shuffle(test_ix)
+		# Shuffle the training sets
+		np.random.seed(self.seed)
+		np.random.shuffle(self.x_train)
+		np.random.seed(self.seed)
+		np.random.shuffle(self.y_train)
 		
-		# Reorder the lists
-		x_train_new = [self.x_train[ix] for ix in train_ix]
-		y_train_new = [self.y_train[ix] for ix in train_ix]
-		x_test_new  = [self.x_test[ix]  for ix in test_ix]
-		y_test_new  = [self.y_test[ix]  for ix in test_ix]
-		
-		# Map lists back to proper memory location
-		self.x_train = x_train_new
-		self.y_train = y_train_new
-		self.x_test  = x_test_new
-		self.y_test  = y_test_new
+		# Shuffle the test sets
+		seed = np.random.get_state()[1][0]
+		np.random.shuffle(self.x_test)
+		np.random.seed(seed)
+		np.random.shuffle(self.y_test)
 	
 	def reduce_dataset(self, n_train, n_test, normalize=True):
 		"""
@@ -226,15 +220,20 @@ class BaseDataset(object):
 			"""
 			
 			# Keep track of label occurrences
-			count = {x:0 for x in xrange(10)}
-			o_x = []; o_y = []
+			count  = {lbl:0 for lbl in self.unique_labels}
+			s_x    = list(x.shape); s_y = list(y.shape)
+			s_x[0] = limit * self.num_labels; s_y[0] = limit * self.num_labels
+			o_x    = np.zeros(s_x, x.dtype); o_y = np.zeros(s_y, y.dtype)
 			
 			# Pull out data
+			tot = 0
 			for i, lbl in enumerate(y):
-				if count[lbl] < limit:
-					o_x.append(x[i])
-					o_y.append(lbl)
+				c = count[lbl]
+				if c < limit:
+					o_x[tot]   = x[i]
+					o_y[tot]   = lbl
 					count[lbl] += 1
+					tot        += 1
 			
 			return o_x, o_y
 		
@@ -244,17 +243,17 @@ class BaseDataset(object):
 				self.x_train, self.y_train = reduce_set(self.x_train,
 					self.y_train, n_train)
 			else:
-				del self.x_train[n_train:]
-				del self.y_train[n_train:]
+				self.x_train = self.x_train[:n_train]
+				self.y_train = self.y_train[:n_train]
 		else:
-			self.x_train = []; self.y_train = []
+			self.x_train = np.array([]); self.y_train = np.array([])
 		
 		if n_test > 0:
 			if normalize:
 				self.x_test, self.y_test = reduce_set(self.x_test, self.y_test,
 					n_test)
 			else:
-				del self.x_test[n_test:]
-				del self.y_test[n_test:]
+				self.x_train = self.x_train[:n_train]
+				self.y_train = self.y_train[:n_train]
 		else:
-			self.x_test = []; self.y_test = []
+			self.x_test = np.array([]); self.y_test = np.array([])

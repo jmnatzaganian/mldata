@@ -23,10 +23,15 @@ Legal
 Prerequisites
 =============
 	- U{Python 2.7.X<https://www.python.org/downloads/release/python-279/>}
+	- U{Numpy<http://www.numpy.org/>}
 
 Installation
 ============
 	1. Install all prerequisites
+		Assuming you have U{pip<https://pip.pypa.io/en/latest/installing.html>}
+		installed, located in your X{Python27/Scripts} directory:
+		
+		X{pip install numpy}
 	2. Install this package: X{python setup.py install}. The setup file is
 	located in the "src" folder.
 
@@ -67,11 +72,11 @@ Developer Notes
 		From the root level, execute X{python epydoc --config=epydoc_config.txt
 		datasets}
 
-@group Computer Vision Datasets: vision.mnist
+@group Computer Vision Datasets: vision
 
 @author: U{James Mnatzaganian<http://techtorials.me>}
 @requires: Python 2.7.X
-@version: 1.0.0
+@version: 1.2.0
 @license: U{The MIT License<http://opensource.org/licenses/mit-license.php>}
 @copyright: S{copy} 2015 James Mnatzaganian
 """
