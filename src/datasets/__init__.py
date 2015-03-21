@@ -34,7 +34,7 @@ Getting Started
 ===============
 	- Click U{here<http://techtorials.me/datasets/index.html>} to access the
 	API.
-	- Check out the MNSIT demo X{python -m datasets.mnist.mnist}.
+	- Check out the MNSIT demo X{python -m datasets.vision.mnist.mnist}.
 
 Package Organization
 ====================
@@ -67,7 +67,7 @@ Developer Notes
 		From the root level, execute X{python epydoc --config=epydoc_config.txt
 		datasets}
 
-@group Datasets: mnist
+@group Computer Vision Datasets: vision.mnist
 
 @author: U{James Mnatzaganian<http://techtorials.me>}
 @requires: Python 2.7.X

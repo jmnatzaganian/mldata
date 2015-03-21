@@ -46,3 +46,22 @@ class BaseException(Exception):
 		"""
 		
 		return self.msg
+
+class UnsupportedFunction(BaseException):
+	"""
+	Exception raised if an unsupported function is called, i.e. a user tried to
+	do something he / she shouldn't be doing with that specific object.
+	"""
+	
+	def __init__(self, class_name, function_name):
+		"""
+		Initialize this class.
+		
+		@param class_name: The class name of the caller.
+		
+		@param function_name: The function name of the caller.
+		"""
+		
+		self.msg = wrap_error('The object, {0}, does not support the function '
+			'{1}. Please check your usage and try again.'.format(class_name,
+			function_name))

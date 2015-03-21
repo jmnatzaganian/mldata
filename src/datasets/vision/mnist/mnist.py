@@ -277,12 +277,12 @@ def run_parse_example(out_dir):
 	mnist = MNIST(1, in_dir, out_dir)
 	mnist.reduce_dataset(train_samples, train_samples * 0.2)
 	mnist.dump_csv('1d_train.csv', '1d_test.csv')
-	mnist.dump_pickled('1d_mnist.pickled')
+	mnist.dump_pkl('1d_mnist.pkl')
 	
 	# 2D example
 	mnist = MNIST(2, in_dir, out_dir)
 	mnist.reduce_dataset(train_samples, train_samples * 0.2)
-	mnist.dump_pickled('2d_mnist.pickled')
+	mnist.dump_pkl('2d_mnist.pkl')
 
 if __name__ == "__main__":
 	out_dir = os.path.join(os.getcwd(), 'mnist_data')

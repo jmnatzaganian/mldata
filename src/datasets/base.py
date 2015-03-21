@@ -113,7 +113,7 @@ class BaseDataset(object):
 		not.
 		"""
 	
-	def dump_pickled(self, file_name=None):
+	def dump_pkl(self, file_name=None):
 		"""
 		Output the data to a pickled data file. The data will be in the format
 		of a list of two lists. The inner lists will contain the images and the
@@ -124,13 +124,13 @@ class BaseDataset(object):
 		
 		# Initialize the path
 		if file_name is None:
-			path = os.path.join(self.out_dir, 'dataset.pickled')
+			path = os.path.join(self.out_dir, 'dataset.pkl')
 		else:
 			path = os.path.join(self.out_dir, file_name)
 		
 		with open(path, 'wb') as f:
 			cPickle.dump([[self.x_train, self.y_train], [self.x_test,
-				self.y_test]], f)
+				self.y_test]], f, cPickle.HIGHEST_PROTOCOL)
 	
 	@abstractmethod
 	def load(self):

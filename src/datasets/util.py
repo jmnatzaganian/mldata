@@ -48,11 +48,11 @@ def load_csv(path, lbl_type=int, data_type=int, has_header=True):
 	
 	return (x, y)
 
-def load_pickled(path):
+def load_pkl(path):
 	"""
 	Get the data from a dumped pickled data file.
 	
-	@param path: The full path to the CSV.
+	@param path: The full path to the pickled file.
 	
 	@return: A tuple containing the data and the labels for the training and
 	test sets, i.e. (x_train, y_train), (x_test, y_test).
