@@ -55,7 +55,7 @@ sourcecode: yes
 include-log: no
 
 # The documented project's name.
-name: datasets
+name: mldata
 
 # The CSS stylesheet for HTML output.
 css: white
@@ -70,7 +70,7 @@ url: http://techtorials.me
 # The "top" page for the documentation. Can be a URL, the name of a module or
 # class, or one of the special names "trees.html", "indices.html", or
 # "help.html"
-top: datasets
+top: mldata
 
 # Whether or not to include a frames-based table of contents.
 frames: yes

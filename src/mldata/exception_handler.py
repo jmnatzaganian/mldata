@@ -4,7 +4,7 @@
 # Contact        : http://techtorials.me
 # Date Created   : 09/27/14
 #	
-# Description    : Module for dealing with all errors
+# Description    : Module for dealing with all errors.
 # Python Version : 2.7.8
 #
 # License        : MIT License http://opensource.org/licenses/mit-license.php
@@ -14,7 +14,7 @@
 Exception handler for this project. This module is used for every single
 exception.
 
-G{packagetree datasets}
+G{packagetree mldata}
 """
 
 __docformat__ = 'epytext'

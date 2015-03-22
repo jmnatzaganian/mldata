@@ -13,7 +13,7 @@
 """
 Utility module. This module handles any sort of accessory items.
 
-G{packagetree datasets}
+G{packagetree mldata}
 """
 
 __docformat__ = 'epytext'

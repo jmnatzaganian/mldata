@@ -4,7 +4,7 @@
 # Contact        : http://techtorials.me
 # Date Created   : 03/20/15
 #
-# Description    : Defines the datasets package
+# Description    : Defines the vision package.
 # Python Version : 2.7.8
 #
 # License        : MIT License http://opensource.org/licenses/mit-license.php

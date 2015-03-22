@@ -13,7 +13,7 @@
 """
 Module for working with MNIST data.
 
-G{packagetree datasets}
+G{packagetree mldata}
 """
 
 __docformat__ = 'epytext'
@@ -25,8 +25,8 @@ import os, struct, gzip, pkgutil
 import numpy as np
 
 # Program imports
-from datasets.base              import BaseDataset
-from datasets.exception_handler import BaseException, wrap_error
+from mldata.base              import BaseDataset
+from mldata.exception_handler import BaseException, wrap_error
 
 ###############################################################################
 ########## Exception Handling
@@ -136,7 +136,7 @@ class MNIST(BaseDataset):
 		# Initialize the paths
 		if in_dir is None:
 			self.in_dir = os.path.join(pkgutil.get_loader(
-				'datasets.vision.mnist').filename, 'data')
+				'mldata.vision.mnist').filename, 'data')
 		else:
 			self.in_dir = in_dir
 		self.out_dir        = out_dir
@@ -275,7 +275,7 @@ def run_parse_example(out_dir):
 	"""
 	
 	in_dir = os.path.join(pkgutil.get_loader(
-		'datasets.vision.mnist').filename, 'data')
+		'mldata.vision.mnist').filename, 'data')
 		
 	# How many samples per number to use
 	train_samples = 100

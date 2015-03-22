@@ -4,7 +4,7 @@
 # Contact        : http://techtorials.me
 # Date Created   : 03/17/15
 #
-# Description    : Defines the datasets package
+# Description    : Defines the mldata package
 # Python Version : 2.7.8
 #
 # License        : MIT License http://opensource.org/licenses/mit-license.php
@@ -37,15 +37,15 @@ Installation
 
 Getting Started
 ===============
-	- Click U{here<http://techtorials.me/datasets/index.html>} to access the
+	- Click U{here<http://techtorials.me/mldata/index.html>} to access the
 	API.
-	- Check out the MNSIT demo X{python -m datasets.vision.mnist.mnist}.
+	- Check out the MNSIT demo X{python -m mldata.vision.mnist.mnist}.
 
 Package Organization
 ====================
-	The datasets package contains the following subpackages and modules:
+	The mldata package contains the following subpackages and modules:
 
-	G{packagetree datasets}
+	G{packagetree mldata}
 
 Connectivity
 ============
@@ -70,7 +70,7 @@ Developer Notes
 	Generating the API
 	------------------
 		From the root level, execute X{python epydoc --config=epydoc_config.txt
-		datasets}
+		mldata}
 
 @group Computer Vision Datasets: vision
 

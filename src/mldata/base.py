@@ -13,7 +13,7 @@
 """
 Base class for datasets.
 
-G{packagetree datasets}
+G{packagetree mldata}
 """
 
 __docformat__ = 'epytext'

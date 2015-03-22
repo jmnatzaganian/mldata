@@ -1,4 +1,4 @@
-# datasets
+# mldata (Machine Learning Datasets)
 ## Intro
 This is a collection of various datasets that can be used for machine learning
 applications. More details may be found
@@ -14,6 +14,7 @@ procedure to obtain the dependencies:
 
 1) If you don't have pip (check in your Python27/Scripts folder) obtain it
 from [here](https://pip.pypa.io/en/latest/installing.html).
+
 2) Install the dependencies using pip:
 pip install numpy
 
@@ -24,7 +25,7 @@ install`.
 This package is platform independent, and should work on any system running
 Python 2.7.X.
 
-Click [here](http://techtorials.me/datasets/index.html) to access the API.
+Click [here](http://techtorials.me/mldata/index.html) to access the API.
 
 ## Author
 The original author of this code was James Mnatzaganian. For contact info, as
