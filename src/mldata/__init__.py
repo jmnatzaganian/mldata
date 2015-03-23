@@ -42,6 +42,16 @@ Getting Started
 	API.
 	- Check out the MNSIT demo X{python -m mldata.vision.mnist.mnist}.
 
+Configuration
+=============
+	This package will save the datasets the folder ".mldata" in your home
+	directory. To change this, call the function "mldata.util.set_base_dir"
+	with your new desired path.
+	
+	Note that all configuration settings are stored in the file ".mldata.cfg"
+	in your home directory. These are user settings that will override the
+	global defaults.
+
 Package Organization
 ====================
 	The mldata package contains the following subpackages and modules:
@@ -87,8 +97,8 @@ __docformat__ = 'epytext'
 # Native imports
 import os
 
-#: Constant - Denoting where the home directory is (user controllable)
+# Constant - Denoting where the home directory is (user controllable)
 BASE_DIR = os.path.join(os.path.expanduser('~'), '.mldata')
 
-#: Constant - Denoting where the user config file is
+# Constant - Denoting where the user config file is
 USER_CFG = os.path.join(os.path.expanduser('~'), '.mldata.cfg')

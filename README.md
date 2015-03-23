@@ -29,6 +29,15 @@ Python 2.7.X.
 
 Click [here](http://techtorials.me/mldata/index.html) to access the API.
 
+## Configuration
+This package will save the datasets the folder ".mldata" in your home
+directory. To change this, call the function "mldata.util.set_base_dir" with
+your new desired path.
+
+Note that all configuration settings are stored in the file ".mldata.cfg" in
+your home directory. These are user settings that will override the global
+defaults.
+
 ## Author
 The original author of this code was James Mnatzaganian. For contact info, as
 well as other details, see his corresponding [website](http://techtorials.me).
