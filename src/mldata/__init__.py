@@ -24,6 +24,7 @@ Prerequisites
 =============
 	- U{Python 2.7.X<https://www.python.org/downloads/release/python-279/>}
 	- U{Numpy<http://www.numpy.org/>}
+	- U{Requests<http://docs.python-requests.org/en/latest/>}
 
 Installation
 ============
@@ -31,7 +32,7 @@ Installation
 		Assuming you have U{pip<https://pip.pypa.io/en/latest/installing.html>}
 		installed, located in your X{Python27/Scripts} directory:
 		
-		X{pip install numpy}
+		X{pip install numpy requests}
 	2. Install this package: X{python setup.py install}. The setup file is
 	located in the "src" folder.
 

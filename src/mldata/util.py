@@ -19,10 +19,38 @@ G{packagetree mldata}
 __docformat__ = 'epytext'
 
 # Native imports
-import cPickle, csv
+import cPickle, csv, zipfile, tarfile, os
 
 # Third party imports
 import numpy as np
+import requests
+
+# Program imports
+from mldata.status_bar        import StatusBar
+from mldata.exception_handler import BaseException, wrap_error
+
+###############################################################################
+########## Exception Handling
+###############################################################################
+
+class UnsupportedArchive(BaseException):
+	"""
+	Exception if the archive type is unsupported.
+	"""
+	
+	def __init__(self, path):
+		"""
+		Initialize this class.
+		
+		@param path: The full path to the archive.
+		"""
+		
+		self.msg = wrap_error('The archvie, {0}, is unsupported. The archive'
+			'must be a zip or tar file.'.format(path))
+
+###############################################################################
+########## Primary Functions
+###############################################################################
 
 def load_csv(path, x_dtype=np.dtype('uint8'), y_dtype=np.dtype('uint8'),
 	has_header=True):
@@ -64,3 +92,61 @@ def load_pkl(path):
 		(x_train, y_train), (x_test, y_test) = cPickle.load(f)
 	
 	return (x_train, y_train), (x_test, y_test)
+
+def download(url, out_path, chunk_size=65535, verbose=True):
+	"""
+	Download the specified item.
+	
+	@param url: The URL to fetch the item from.
+	
+	@param out_path: The full path to where the file should be saved.
+	
+	@param chunk_size: The number of bytes to download in a single transaction.
+	
+	@param verbose: If True a status bar will be created to show the download
+	progress.
+	"""
+	
+	# Create a new request
+	r = requests.get(url, stream=True)
+	
+	# Create a status bar
+	if verbose:
+		print '\nDownloading...'
+		sb = StatusBar(int(r.headers['content-length']))
+	
+	with open(out_path, 'wb') as f:
+		for chunk in r.iter_content(chunk_size):
+			f.write(chunk)
+			if verbose: sb.increment(chunk_size)
+	if verbose: sb.finish()
+
+def extract(source_path, destination_path):
+	"""
+	Extract an archive.
+	
+	@param source_path: The full path to the source file.
+	
+	@param destination_path: The full path to where the archive should be
+	extracted.
+	
+	@raise UnsupportedArchive: Raised if the archive is an unsupported type.
+	"""
+	
+	# Check to see if the archive type is supported
+	try:
+		archive = zipfile.ZipFile(source_path)
+	except zipfile.BadZipfile:
+		try:
+			archive = tarfile.open(source_path)
+		except tarfile.ReadError:
+			raise UnsupportedArchive(source_path)
+	
+	# Make the destination directory (if aplicable)
+	try:
+		os.makedirs(destination_path)
+	except OSError:
+		pass
+	
+	# Extract the archive
+	archive.extractall(destination_path)

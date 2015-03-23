@@ -9,6 +9,8 @@ versions are untested)
 
 [Numpy](http://www.numpy.org/)
 
+[Requests](http://docs.python-requests.org/en/latest/)
+
 If you are new to Python, it is recommended that you use the following
 procedure to obtain the dependencies:
 
@@ -16,7 +18,7 @@ procedure to obtain the dependencies:
 from [here](https://pip.pypa.io/en/latest/installing.html).
 
 2) Install the dependencies using pip:
-pip install numpy
+pip install numpy requests
 
 ## Usage
 Download this repo and inside the "src" folder execute `python setup.py
