@@ -20,12 +20,14 @@ __docformat__ = 'epytext'
 
 # Native imports
 import cPickle, csv, zipfile, tarfile, os
+from ConfigParser import SafeConfigParser, NoSectionError
 
 # Third party imports
 import numpy as np
 import requests
 
 # Program imports
+from mldata                   import BASE_DIR, USER_CFG
 from mldata.status_bar        import StatusBar
 from mldata.exception_handler import BaseException, wrap_error
 
@@ -51,6 +53,36 @@ class UnsupportedArchive(BaseException):
 ###############################################################################
 ########## Primary Functions
 ###############################################################################
+
+def get_base_dir():
+	"""
+	Get the base directory for the datasets.
+	
+	@return: The base direcotry.
+	"""
+	
+	config = SafeConfigParser()
+	config.read(USER_CFG)
+	
+	try:
+		return config.get('global', 'base_dir')
+	except NoSectionError:
+		set_base_dir(BASE_DIR)
+		return BASE_DIR
+
+def set_base_dir(base_dir):
+	"""
+	Set the base directory for the datasets.
+	
+	@param base_dir: The new base directory.
+	"""
+	
+	config = SafeConfigParser()
+	config.add_section('global')
+	config.set('global', 'base_dir', base_dir)
+	
+	with open(USER_CFG, 'wb') as f:
+		config.write(f)
 
 def load_csv(path, x_dtype=np.dtype('uint8'), y_dtype=np.dtype('uint8'),
 	has_header=True):
@@ -93,7 +125,7 @@ def load_pkl(path):
 	
 	return (x_train, y_train), (x_test, y_test)
 
-def download(url, out_path, chunk_size=65535, verbose=True):
+def downloader(url, out_path, chunk_size=65535, verbose=True):
 	"""
 	Download the specified item.
 	
@@ -110,18 +142,27 @@ def download(url, out_path, chunk_size=65535, verbose=True):
 	# Create a new request
 	r = requests.get(url, stream=True)
 	
+	# Make the destination directory (if aplicable)
+	try:
+		os.makedirs(os.path.dirname(out_path))
+	except OSError:
+		pass
+	
 	# Create a status bar
 	if verbose:
 		print '\nDownloading...'
 		sb = StatusBar(int(r.headers['content-length']))
 	
+	# Download the file
 	with open(out_path, 'wb') as f:
 		for chunk in r.iter_content(chunk_size):
-			f.write(chunk)
+			if chunk:
+				f.write(chunk)
+				f.flush()
 			if verbose: sb.increment(chunk_size)
 	if verbose: sb.finish()
 
-def extract(source_path, destination_path):
+def extractor(source_path, destination_path):
 	"""
 	Extract an archive.
 	

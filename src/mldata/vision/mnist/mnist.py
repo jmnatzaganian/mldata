@@ -19,12 +19,13 @@ G{packagetree mldata}
 __docformat__ = 'epytext'
 
 # Native imports
-import os, struct, gzip, pkgutil
+import os, struct, gzip, pkgutil, shutil
 
 # Third party imports
 import numpy as np
 
 # Program imports
+from ..                       import BASE_DIR
 from mldata.base              import BaseDataset
 from mldata.exception_handler import BaseException, wrap_error
 
@@ -112,15 +113,12 @@ class MNIST(BaseDataset):
 	Class for working with MNIST data.
 	"""
 	
-	def __init__(self, ndims=1, in_dir=None, out_dir=os.getcwd(), seed=None):
+	def __init__(self, ndims=1, seed=None):
 		"""
-		Initializes this MNIST object.
+		Initializes this MNIST object. The data is automatically fetched and
+		loaded.
 		
-		@param ndims: The number of dimensions (1 or 2)
-		
-		@param in_dir: Base directory for all input data.
-		
-		@param out_dir: Base directory for all output data.
+		@param ndims: The number of dimensions (1 or 2).
 		
 		@param seed: The seed used for all random numbers.
 		
@@ -133,44 +131,54 @@ class MNIST(BaseDataset):
 		if self.ndims > 2 or self.ndims < 1:
 			raise InvalidDimensions(self.ndims)
 		
-		# Initialize the paths
-		if in_dir is None:
-			self.in_dir = os.path.join(pkgutil.get_loader(
-				'mldata.vision.mnist').filename, 'data')
-		else:
-			self.in_dir = in_dir
-		self.out_dir        = out_dir
-		self.train_x_path = os.path.join(self.in_dir,
+		# Set the base paths
+		self.raw_dir      = os.path.join(BASE_DIR, 'mnist', 'raw')
+		self.base_dir     = os.path.join(BASE_DIR, 'mnist', 'base')
+		self.user_dir     = os.path.join(BASE_DIR, 'mnist', 'user')
+		self.default_set  = os.path.join(self.base_dir,
+			'{0}d_base.pkl'.format(ndims))
+		self.train_x_path = os.path.join(self.raw_dir,
 			'train-images-idx3-ubyte.gz')
-		self.train_y_path = os.path.join(self.in_dir,
+		self.train_y_path = os.path.join(self.raw_dir,
 			'train-labels-idx1-ubyte.gz')
-		self.test_x_path  = os.path.join(self.in_dir,
+		self.test_x_path  = os.path.join(self.raw_dir,
 			't10k-images-idx3-ubyte.gz')
-		self.test_y_path  = os.path.join(self.in_dir,
+		self.test_y_path  = os.path.join(self.raw_dir,
 			't10k-labels-idx1-ubyte.gz')
 		
-		# Make the output directory, if necessary
-		try:
-			os.makedirs(out_dir)
-		except OSError:
-			pass
+		# Set the URLs
+		self.urls = (
+			'http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz',
+			'http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz',
+			'http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz',
+			'http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz'
+		)
 		
 		# Set the seed for all future random numbers
 		self.seed = seed
+	
+	def fetch(self, refetch=False, verbose=True):
+		"""
+		Downloads and loads the data.
 		
-		# Load the data
-		self.load()
+		@param refetch: If True, the dataset will be downloaded even if it
+		already exists.
+		"""
 		
-		# Extract properties about the data
+		super(MNIST, self).fetch(refetch=refetch, extract=False,
+			verbose=verbose)
+		self._save_base(refetch)
 		self._get_unique_labels()
 		
-	def _load(self, x_path, y_path):
+	def _load(self, x_path, y_path, ndims=1):
 		"""
 		Load the data into memory.
 		
 		@param x_path: The path to the x data (the images).
 		
 		@param y_path: The path to the y data (the labels).
+		
+		@param ndims: The number of dimensions to use (1D or 2D only!).
 		
 		@returns: A tuple containing the x data and its corresponding labels.
 		
@@ -185,7 +193,7 @@ class MNIST(BaseDataset):
 				raise WrongMagicNumber(x_path, 2051, magic)
 			data = np.frombuffer(f.read(), dtype=dt)
 		
-		if self.ndims == 1:
+		if ndims == 1:
 			# 1D representation
 			img = np.zeros((size, rows * cols), dtype=dt)
 			for i in xrange(size):
@@ -207,29 +215,51 @@ class MNIST(BaseDataset):
 		
 		return img, lbl
 	
-	def load(self):
+	def _save_base(self, refetch=False):
 		"""
-		Loads the training and testing images and labels into memory.
+		Saves the training and testing images and labels into memory.
 		
-		This method is automatically called upon creating the MNIST object.
-		Any future calls to this method will reset the data to the full
-		dataset.
+		@param refetch: If True, the dataset will be downloaded even if it
+		already exists.
 		"""
 		
-		self.x_train, self.y_train = \
-			self._load(self.train_x_path, self.train_y_path)
-		self.x_test, self.y_test = \
-			self._load(self.test_x_path, self.test_y_path)
-	
-	def dump_csv(self, train_file_name=None, test_file_name=None,
-		make_header=True):
+		# Delete any unwanted data
+		if refetch:
+			try:
+				shutil.rmtree(self.base_dir)
+			except OSError:
+				pass
+		
+		path_2d = os.path.join(self.base_dir, '2d_base.pkl')
+		path_1d = os.path.join(self.base_dir, '1d_base.pkl')
+		
+		if self.ndims == 1:
+			p = (path_2d, 2, path_1d, 1)
+		else:
+			p = (path_1d, 1, path_2d, 2)
+		
+		if not os.path.exists(p[0]):			
+			self.x_train, self.y_train =                                      \
+				self._load(self.train_x_path, self.train_y_path, p[1])
+			self.x_test, self.y_test =                                        \
+				self._load(self.test_x_path, self.test_y_path, p[1])
+			self.dump_pkl(p[0])
+			
+		if not os.path.exists(p[2]):			
+			self.x_train, self.y_train =                                      \
+				self._load(self.train_x_path, self.train_y_path, p[3])
+			self.x_test, self.y_test =                                        \
+				self._load(self.test_x_path, self.test_y_path, p[3])
+			self.dump_pkl(p[2])
+		else:
+			self.load()
+
+	def dump_csv(self, out_dir, make_header=True):
 		"""
-		Output the data to a CSV file. This is only supported if the data is
+		Output the data to CSV files. This is only supported if the data is
 		1D.
 		
-		@param train_file_name: The file name to use for the training data.
-		
-		@param test_file_name: The file name to use for the testing data.
+		@param out_dir: The destination of where to save the CSVs.
 		
 		@param make_header: Boolean denoting whether a header should be made or
 		not.
@@ -237,6 +267,11 @@ class MNIST(BaseDataset):
 		@raise InvalidCSVDimensions: Raised if data was attempted to be dumped
 		for 2D.
 		"""
+		
+		try:
+			os.makedirs(out_dir)
+		except OSError:
+			pass
 		
 		# Check to see if 2D data was used
 		if self.ndims == 2:
@@ -250,14 +285,8 @@ class MNIST(BaseDataset):
 			header = []
 		
 		# Initialize path names
-		if train_file_name is None:
-			train_path = os.path.join(self.out_dir, 'train.csv')
-		else:
-			train_path = os.path.join(self.out_dir, train_file_name)
-		if test_file_name is None:
-			test_path = os.path.join(self.out_dir, 'test.csv')
-		else:
-			test_path = os.path.join(self.out_dir, test_file_name)
+		train_path = os.path.join(out_dir, 'train.csv')
+		test_path  = os.path.join(out_dir, 'test.csv')
 		
 		# Create the CSV files
 		self._csv_dump(train_path, header, self.x_train, self.y_train)
@@ -273,23 +302,24 @@ def run_parse_example(out_dir):
 	
 	@param out_dir: The directory you wish to write the data to.
 	"""
-	
-	in_dir = os.path.join(pkgutil.get_loader(
-		'mldata.vision.mnist').filename, 'data')
 		
 	# How many samples per number to use
 	train_samples = 100
 	
 	# 1D example
-	mnist = MNIST(1, in_dir, out_dir)
+	mnist = MNIST(1)
+	mnist.fetch()
 	mnist.reduce_dataset(train_samples, train_samples * 0.2)
-	mnist.dump_csv('1d_train.csv', '1d_test.csv')
-	mnist.dump_pkl('1d_mnist.pkl')
+	mnist.dump_csv(out_dir)
+	mnist.dump_pkl(os.path.join(out_dir, '1d_mnist.pkl'))
+	mnist.save('1d_100')
 	
 	# 2D example
-	mnist = MNIST(2, in_dir, out_dir)
+	mnist = MNIST(2)
+	mnist.load()
 	mnist.reduce_dataset(train_samples, train_samples * 0.2)
-	mnist.dump_pkl('2d_mnist.pkl')
+	mnist.dump_pkl(os.path.join(out_dir, '2d_mnist.pkl'))
+	mnist.save('2d_100')
 
 if __name__ == "__main__":
 	out_dir = os.path.join(os.getcwd(), 'mnist_data')

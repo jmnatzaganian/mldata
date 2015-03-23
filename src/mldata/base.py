@@ -19,11 +19,37 @@ G{packagetree mldata}
 __docformat__ = 'epytext'
 
 # Native imports
-import os, cPickle, csv
+import os, cPickle, csv, shutil
 from abc import ABCMeta, abstractmethod
 
 # Third party imports
 import numpy as np
+
+# Program imports
+from mldata.util import downloader, extractor, load_pkl
+from mldata.exception_handler import BaseException, wrap_error
+
+###############################################################################
+########## Exception Handling
+###############################################################################
+
+class InvalidSavedDataset(BaseException):
+	"""
+	Exception if the saved dataset does not exist.
+	"""
+	
+	def __init__(self, name, datasets):
+		"""
+		Initialize this class.
+		
+		@param name: The name that was attempted to be loaded.
+		
+		@param datasets: A list of valid datasets.
+		"""
+		
+		self.msg = wrap_error('The saved dataset, {0}, is invalid. The '
+			'current saved datasets are {1}'.format(name, ', '.join(map(str,
+				datasets))))
 
 ###############################################################################
 ########## Class Implementation
@@ -48,6 +74,18 @@ class BaseDataset(object):
 		
 		@param seed: The seed used for all random numbers.
 		"""		
+	
+	@abstractmethod
+	def dump_csv(self, out_dir, make_header=True):
+		"""
+		Output the data to CSV files. This is only supported if the data is
+		1D.
+		
+		@param out_dir: The destination of where to save the CSVs.
+		
+		@param make_header: Boolean denoting whether a header should be made or
+		not.
+		"""
 	
 	def _csv_dump(self, path, header, x, y=None, iters=1):
 		"""
@@ -99,51 +137,112 @@ class BaseDataset(object):
 		self.min_train_count = min(self.label_train_count.values())
 		self.min_test_count  = min(self.label_test_count.values())
 	
-	@abstractmethod
-	def dump_csv(self, train_file_name=None, test_file_name=None,
-		make_header=True):
+	def _get_user_saves(self):
 		"""
-		Output the data to a CSV file.
+		Returns a list of the valid user saves.
 		
-		@param train_file_name: The file name to use for the training data.
-		
-		@param test_file_name: The file name to use for the testing data.
-		
-		@param make_header: Boolean denoting whether a header should be made or
-		not.
+		@return: A list of saved datasets.
 		"""
+		
+		return [x[:-4] for x in os.listdir(self.user_dir)]
 	
-	def dump_pkl(self, file_name=None):
+	def fetch(self, refetch=False, extract=True, keep_archive=False,
+		verbose=True):
+		"""
+		Downloads and extracts the data.
+		
+		@param refetch: If True, the dataset will be downloaded even if it
+		already exists.
+		
+		@param extract: If True, the dataset will also be extracted.
+		
+		@param keep_archive: If True, the archive will be kept in addition to
+		the extracted data. This parameter is only used if extract is True.
+		
+		@param verbose: If True a status bar will be created to show the
+		download progress.
+		"""
+		
+		# Delete any unwanted data
+		if refetch:
+			try:
+				shutil.rmtree(self.raw_dir)
+			except OSError:
+				pass
+		
+		# Make the download directory, if necessary
+		try:
+			os.makedirs(self.raw_dir)
+		except OSError:
+			pass
+		
+		for url in self.urls:
+			dl_path = os.path.join(self.raw_dir, url.split('/')[-1])
+			if not os.path.exists(dl_path):
+				# Download
+				downloader(url, dl_path, verbose=verbose)
+				
+				# Extract and delete the original archive
+				if extract:
+					extractor(dl_path, self.raw_dir)
+					if not keep_archive:
+						os.remove(dl_path)
+	
+	def save(self, name):
+		"""
+		Saves the data as a custom dataset.
+		
+		@param name: The name to save the data as.
+		"""
+		
+		path = os.path.join(self.user_dir, name + '.pkl')
+		try:
+			os.makedirs(self.user_dir)
+		except OSError:
+			pass
+		
+		self.dump_pkl(path)
+	
+	def load(self, name=None):
+		"""
+		Loads the saved data.
+		
+		@param name: The name of the saved data to load. If None, the default
+		base set will be used.
+		
+		@raise InvalidSavedDataset: Raised if the saved dataset does not exist.
+		"""
+		
+		if name is None:
+			path = self.default_set
+		else:
+			path = os.path.join(self.user_dir, name + '.pkl')
+			if not os.path.isfile(path):
+				raise InvalidSavedDataset(path, self._get_user_saves())
+		
+		(self.x_train, self.y_train), (self.x_test, self.y_test) =            \
+			load_pkl(path)
+		
+		# Extract properties about the data
+		self._get_unique_labels()
+		
+	def dump_pkl(self, out_path):
 		"""
 		Output the data to a pickled data file. The data will be in the format
 		of a list of two lists. The inner lists will contain the images and the
 		labels, respectively, for the training and testing data, respectively.
 		
-		@param file_name: The file name to use.
+		@param out_path: The destination of where to write the file.
 		"""
 		
-		# Initialize the path
-		if file_name is None:
-			path = os.path.join(self.out_dir, 'dataset.pkl')
-		else:
-			path = os.path.join(self.out_dir, file_name)
+		try:
+			os.makedirs(os.path.dirname(out_path))
+		except OSError:
+			pass
 		
-		with open(path, 'wb') as f:
+		with open(out_path, 'wb') as f:
 			cPickle.dump([[self.x_train, self.y_train], [self.x_test,
 				self.y_test]], f, cPickle.HIGHEST_PROTOCOL)
-	
-	@abstractmethod
-	def load(self):
-		"""
-		Loads the data into memory. This must create four class variables:
-		
-		x_train - The training data.
-		y_train  - The training labels.
-		x_test  - The testing data.
-		y_test  - The testing labels.
-		
-		This class should additionally call the "_get_unique_labels" function.
-		"""
 	
 	def shuffle(self):
 		"""

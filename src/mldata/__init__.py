@@ -83,3 +83,12 @@ Developer Notes
 """
 
 __docformat__ = 'epytext'
+
+# Native imports
+import os
+
+#: Constant - Denoting where the home directory is (user controllable)
+BASE_DIR = os.path.join(os.path.expanduser('~'), '.mldata')
+
+#: Constant - Denoting where the user config file is
+USER_CFG = os.path.join(os.path.expanduser('~'), '.mldata.cfg')

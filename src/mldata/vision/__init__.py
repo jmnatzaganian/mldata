@@ -16,3 +16,12 @@ applications.
 """
 
 __docformat__ = 'epytext'
+
+# Native imports
+import os
+
+# Program imports
+from mldata.util import get_base_dir
+
+#: Constant - Denotes where the base directory is
+BASE_DIR = os.path.join(get_base_dir(), 'vision')

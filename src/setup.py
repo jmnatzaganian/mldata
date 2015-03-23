@@ -17,13 +17,12 @@ import shutil
 # Install the program
 setup(
 	name='mldata',
-	version='1.3.0',
+	version='2.0.0',
 	description="Machine Learning Datasets",
 	author='James Mnatzaganian',
 	author_email='jamesmnatzaganian@outlook.com',
 	url='http://techtorials.me',
-	packages=['mldata', 'mldata.vision', 'mldata.vision.mnist'],
-	package_data={'mldata.vision.mnist':['data/*.gz']}
+	packages=['mldata', 'mldata.vision', 'mldata.vision.mnist']
 	)
 
 # Remove the unnecessary build folder
